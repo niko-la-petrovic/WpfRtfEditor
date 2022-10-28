@@ -19,18 +19,19 @@
         </ResourceDictionary>
     </Window.Resources>
     <Window.CommandBindings>
-        <CommandBinding Command="{x:Static ApplicationCommands.Close}" Executed="CommandBinding_Executed" CanExecute="CommandBinding_CanExecute" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Close}" Executed="CloseCommand_Executed" CanExecute="CloseCommand_CanExecute" />
+        <CommandBinding Command="{x:Static ApplicationCommands.Save}" Executed="SaveCommand_Executed" CanExecute="SaveCommand_CanExecute"/>
+        <CommandBinding Command="{x:Static ApplicationCommands.SaveAs}" Executed="SaveAsCommand_Executed" CanExecute="SaveAsCommand_CanExecute"/>
     </Window.CommandBindings>
 
     <Grid>
         <DockPanel Background="AliceBlue" >
             <DockPanel DockPanel.Dock="Top" Background="AntiqueWhite">
-
                 <Menu DockPanel.Dock="Top">
                     <MenuItem Header="_File" Padding="{StaticResource ResourceKey=MenuItemPadding}">
-                        <MenuItem Header="_Save" Command="{x:Static ApplicationCommands.Save}" CommandTarget="{Binding ElementName=rtfTextBox}" />
-                        <MenuItem Header="_Save As" />
-                        <MenuItem Header="_Open" />
+                        <MenuItem Header="_Save" Command="{x:Static ApplicationCommands.Save}" />
+                        <MenuItem Header="_Save As" Command="{x:Static ApplicationCommands.SaveAs}" />
+                        <MenuItem Header="_Open" Command="{x:Static ApplicationCommands.Open}"  />
                         <MenuItem Header="_Close" Command="{x:Static ApplicationCommands.Close}" />
                     </MenuItem>
                     <MenuItem Header="_Home"/>
@@ -57,7 +58,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="70"/>
                     </Grid.RowDefinitions>
-
 
                     <DockPanel Grid.Column="0" Grid.Row="0" Background="White">
                         <StackPanel
@@ -132,7 +132,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Visible"
                           Margin="10">
                 <RichTextBox Name="rtfTextBox"
-                       TextChanged="RtfTextBox_TextChanged"   SelectionChanged="RtfTextBox_SelectionChanged"
+                       TextChanged="RtfTextBox_TextChanged" SelectionChanged="SelectionChanged"
                        DockPanel.Dock="Bottom"
                        BorderBrush="Black"
                          />

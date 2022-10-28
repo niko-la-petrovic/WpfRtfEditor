@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace WpfRtfEditor;
 
@@ -22,14 +24,15 @@ namespace WpfRtfEditor;
 /// </summary>
 public partial class MainWindow : Window
 {
-    protected bool ApplyStylingNext { get; set; }
     protected RtfSelectionState RtfSelectionState { get; set; }
-
-    // TODO use memo
-
+    protected TextSelection Selection => rtfTextBox.Selection;
+    protected bool UnsavedChanges { get; set; } // TODO on save set to false
+    protected string FileLocation { get; set; }
+    private readonly string _baseTitle;
     public MainWindow()
     {
         InitializeComponent();
+        _baseTitle = Title;
 
         var fonts = Fonts.SystemFontFamilies.OrderBy(f => f.Source);
         var fontSizes = new List<double>() { 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72 };
@@ -40,40 +43,33 @@ public partial class MainWindow : Window
         };
 
         fontComboBox.ItemsSource = fonts;
-        fontComboBox.SelectedItem = RtfSelectionState.FontFamily; // TODO not doing its job
+        fontComboBox.SelectedItem = RtfSelectionState.FontFamily;
 
-        fontSizeComboBox.ItemsSource = fonts;
-        fontSizeComboBox.SelectedItem = RtfSelectionState.FontSize; // TODO not doing its job
+        fontSizeComboBox.ItemsSource = fontSizes;
+        fontSizeComboBox.SelectedItem = RtfSelectionState.FontSize;
     }
 
     private void FontComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        // TODO
         if (e.AddedItems.Count == 0) return;
 
-        if (rtfTextBox.Selection.IsEmpty)
-        {
-            RtfSelectionState.FontFamily = fontComboBox.SelectedItem as FontFamily;
-            ApplyStylingNext = true;
-            return;
-        }
+        if (Selection.IsEmpty) return; // TODO
 
-        rtfTextBox.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
-        // TODO extract
-        ApplyStylingNext = false;
-        //rtfTextBox.FontFamily = e.AddedItems[0] as FontFamily;
+
+        Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
     }
 
     private void RtfTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        //rtfTextBox.Selection.Select(rtfTextBox.CaretPosition, rtfTextBox.CaretPosition.GetPositionAtOffset(-1));
+        UnsavedChanges = true;
+        //Selection.Select(rtfTextBox.CaretPosition, rtfTextBox.CaretPosition.GetPositionAtOffset(-1));
         //// TODO only do this if unhandled property change
-        //rtfTextBox.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
+        //Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
 
-        //rtfTextBox.Selection.Select(rtfTextBox.CaretPosition.DocumentEnd, rtfTextBox.CaretPosition.DocumentEnd);
+        //Selection.Select(rtfTextBox.CaretPosition.DocumentEnd, rtfTextBox.CaretPosition.DocumentEnd);
 
 
-        //rtfTextBox.Selection.Select()
+        //Selection.Select()
         //
     }
 
@@ -81,67 +77,107 @@ public partial class MainWindow : Window
 
     private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        // TODO
         if (e.AddedItems.Count == 0) return;
 
-        rtfTextBox.FontSize = (double)e.AddedItems[0];
+        if (Selection.IsEmpty) return; //TODO
+
+        double fontSize = (double)e.AddedItems[0];
+        Selection.ApplyPropertyValue(TextElement.FontSizeProperty, fontSize);
+        //rtfTextBox.FontSize = fontSize;
     }
 
-    private void PasteButton_Click(object sender, RoutedEventArgs e)
+    private void SelectionChanged(object sender, RoutedEventArgs e)
     {
-        // TODO disable button if clipboard empty?
-        //if(Clipboard.ContainsData() // TODO check predefined formats
-        if (Clipboard.ContainsText())
+
+    }
+
+    private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (!UnsavedChanges)
         {
-            var text = Clipboard.GetText();
-            rtfTextBox.AppendText(text);
+            Application.Current.Shutdown();
             return;
         }
 
-        if (Clipboard.ContainsData(DataFormats.Rtf))
+        var result = MessageBox.Show("There are unsaved changes. Do you want to save changes?", "Close Attempt Warning", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+        if (result == MessageBoxResult.Cancel) return;
+        else if (result == MessageBoxResult.No)
         {
-            var rtfText = Clipboard.GetText(TextDataFormat.Rtf);
-            using var ms = new MemoryStream(Encoding.UTF8.GetBytes(rtfText));
-            rtfTextBox.Selection.Load(ms, DataFormats.Rtf);
+            Application.Current.Shutdown();
             return;
         }
-    }
-
-    private void CutButton_Click(object sender, RoutedEventArgs e)
-    {
-        // TODO disable button if no selection
-        if (rtfTextBox.Selection.IsEmpty) return;
-        // TODO handle
-    }
-
-    private void CopyButton_Click(object sender, RoutedEventArgs e)
-    {
-        // TODO disable button if no selection
-        if (rtfTextBox.Selection.IsEmpty) return;
-
-        var rtfDataFormat = DataFormats.Rtf;
-        if (rtfTextBox.Selection.CanSave(rtfDataFormat))
+        else if (result == MessageBoxResult.Yes)
         {
-            using var ms = new MemoryStream();
-            rtfTextBox.Selection.Save(ms, rtfDataFormat);
-            Clipboard.SetData(rtfDataFormat, ms.ToArray());
+            // TODO invoke save/saveas
+            // command
+        }
+    }
+
+    private void CloseCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = true;
+    }
+
+    private void SaveCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(FileLocation))
+        {
+            SaveAsCommand_Executed(sender, e);
+            return;
         }
 
-        // TODO other types
+        SaveContentsToFile(FileLocation);
     }
 
-    private void RtfTextBox_SelectionChanged(object sender, RoutedEventArgs e)
+    private void SaveCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
-
+        e.CanExecute = UnsavedChanges;
     }
 
-    private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+    private void SaveAsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
     {
+        var dialog = new SaveFileDialog
+        {
+            FileName = "Document",
+            DefaultExt = ".rtf",
+            Filter = ".txt|*.txt|.rtf|*.rtf"
+        };
 
+        bool? result = dialog.ShowDialog();
+        if (result == true)
+            SaveContentsToFile(dialog.FileName);
     }
 
-    private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    private void SaveContentsToFile(string fileName)
     {
+        var extension = Path.GetExtension(fileName);
+        var textDataFormat = extension == ".rtf" ? TextDataFormat.Rtf : TextDataFormat.Text;
+        try
+        {
+            var textRange = GetFullTextRange();
+            if (textDataFormat == TextDataFormat.Rtf)
+            {
+                using var fs = new FileStream(fileName, FileMode.Create);
+                textRange.Save(fs, DataFormats.Rtf);
+            }
+            else if (textDataFormat == TextDataFormat.Text)
+                File.WriteAllText(fileName, textRange.Text);
+        }
+        finally
+        {
+            Title = $"{_baseTitle} - {fileName}";
+            FileLocation = fileName;
+            UnsavedChanges = false;
+        }
+    }
 
+    private TextRange GetFullTextRange()
+    {
+        return new TextRange(rtfTextBox.Document.ContentStart, rtfTextBox.Document.ContentEnd);
+    }
+
+    private void SaveAsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = true;
     }
 }
