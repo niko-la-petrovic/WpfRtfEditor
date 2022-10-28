@@ -114,7 +114,10 @@ public partial class MainWindow : Window
         else if (result == MessageBoxResult.Yes)
         {
             if (saveMenuItem.Command.CanExecute(null))
+            {
                 saveMenuItem.Command.Execute(null);
+                Application.Current.Shutdown();
+            }
         }
     }
 

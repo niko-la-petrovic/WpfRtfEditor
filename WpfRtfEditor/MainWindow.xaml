@@ -22,6 +22,7 @@
         <CommandBinding Command="{x:Static ApplicationCommands.Close}" Executed="CloseCommand_Executed" CanExecute="CloseCommand_CanExecute" />
         <CommandBinding Command="{x:Static ApplicationCommands.Save}" Executed="SaveCommand_Executed" CanExecute="SaveCommand_CanExecute"/>
         <CommandBinding Command="{x:Static ApplicationCommands.SaveAs}" Executed="SaveAsCommand_Executed" CanExecute="SaveAsCommand_CanExecute"/>
+        
     </Window.CommandBindings>
 
     <Grid>
