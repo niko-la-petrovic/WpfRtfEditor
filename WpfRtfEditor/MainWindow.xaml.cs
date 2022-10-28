@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     protected TextSelection Selection => rtfTextBox.Selection;
     protected bool UnsavedChanges { get; set; } // TODO on save set to false
     protected string FileLocation { get; set; }
+    protected bool IsFileLocationSet => !string.IsNullOrWhiteSpace(FileLocation);
     private readonly string _baseTitle;
     public MainWindow()
     {
@@ -61,7 +62,11 @@ public partial class MainWindow : Window
 
     private void RtfTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        UnsavedChanges = true;
+        if (!UnsavedChanges)
+        {
+            UnsavedChanges = true;
+            SetTitle();
+        }
         //Selection.Select(rtfTextBox.CaretPosition, rtfTextBox.CaretPosition.GetPositionAtOffset(-1));
         //// TODO only do this if unhandled property change
         //Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
@@ -108,8 +113,8 @@ public partial class MainWindow : Window
         }
         else if (result == MessageBoxResult.Yes)
         {
-            // TODO invoke save/saveas
-            // command
+            if (saveMenuItem.Command.CanExecute(null))
+                saveMenuItem.Command.Execute(null);
         }
     }
 
@@ -140,7 +145,7 @@ public partial class MainWindow : Window
         {
             FileName = "Document",
             DefaultExt = ".rtf",
-            Filter = ".txt|*.txt|.rtf|*.rtf"
+            Filter = ".rtf|*.rtf|.txt|*.txt"
         };
 
         bool? result = dialog.ShowDialog();
@@ -165,10 +170,15 @@ public partial class MainWindow : Window
         }
         finally
         {
-            Title = $"{_baseTitle} - {fileName}";
             FileLocation = fileName;
             UnsavedChanges = false;
+            SetTitle();
         }
+    }
+
+    private void SetTitle()
+    {
+        Title = (UnsavedChanges ? "* - " : string.Empty) + _baseTitle + (IsFileLocationSet ? FileLocation : string.Empty);
     }
 
     private TextRange GetFullTextRange()
