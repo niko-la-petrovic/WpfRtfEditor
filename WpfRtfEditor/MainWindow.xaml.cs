@@ -159,7 +159,7 @@ public partial class MainWindow : Window
     private void SaveContentsToFile(string fileName)
     {
         var extension = Path.GetExtension(fileName);
-        var textDataFormat = extension == ".rtf" ? TextDataFormat.Rtf : TextDataFormat.Text;
+        var textDataFormat = GetTextDataFormatByExtension(extension);
         try
         {
             var textRange = GetFullTextRange();
@@ -179,6 +179,16 @@ public partial class MainWindow : Window
         }
     }
 
+    private static TextDataFormat GetTextDataFormatByExtension(string extension)
+    {
+        return extension == ".rtf" ? TextDataFormat.Rtf : TextDataFormat.Text;
+    }
+
+    private static string GetDataFormatByExtension(string extension)
+    {
+        return extension == ".rtf" ? DataFormats.Rtf : DataFormats.Text;
+    }
+
     private void SetTitle()
     {
         Title = (UnsavedChanges ? "* - " : string.Empty) + _baseTitle + (IsFileLocationSet ? FileLocation : string.Empty);
@@ -190,6 +200,37 @@ public partial class MainWindow : Window
     }
 
     private void SaveAsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = true;
+    }
+
+    private void OpenCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (UnsavedChanges)
+            saveMenuItem.Command.Execute(null);
+
+        var dialog = new OpenFileDialog
+        {
+            DefaultExt = ".rtf",
+            Filter = "Text documents (.txt)|*.txt|(.rtf)|*.rtf"
+        };
+        var result = dialog.ShowDialog();
+        if (result == true)
+        {
+            var fileName = dialog.FileName;
+            var dataFormat = GetDataFormatByExtension(Path.GetExtension(fileName));
+            var textRange = GetFullTextRange();
+            using var fs = new FileStream(dialog.FileName, FileMode.Open);
+            textRange.Load(fs, dataFormat);
+
+            // TODO to method
+            FileLocation = dialog.FileName;
+            UnsavedChanges = false;
+            SetTitle();
+        }
+    }
+
+    private void OpenCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
         e.CanExecute = true;
     }
