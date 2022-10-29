@@ -200,7 +200,7 @@
                                         </Button>
                                         <ComboBox Name="foregroundTextColorComboBox" SelectionChanged="ForegroundTextColorComboBox_Selected">
                                             <ComboBoxItem>
-                                                <colorpicker:StandardColorPicker x:Name="foregroundTextColorPicker" Width="200" Height="380" />
+                                                <colorpicker:StandardColorPicker x:Name="foregroundTextColorPicker" ColorChanged="ForegroundTextColorPicker_ColorChanged" Width="200" Height="380" />
                                             </ComboBoxItem>
                                         </ComboBox>
                                     </StackPanel>
@@ -213,7 +213,7 @@
                                         </Button>
                                         <ComboBox Name="backgroundTextColorComboBox" SelectionChanged="BackgroundTextColorComboBox_Selected">
                                             <ComboBoxItem>
-                                                <colorpicker:StandardColorPicker x:Name="backgroundTextColorPicker" Width="200" Height="380" />
+                                                <colorpicker:StandardColorPicker x:Name="backgroundTextColorPicker" ColorChanged="BackgroundTextColorPicker_ColorChanged" Width="200" Height="380" />
                                             </ComboBoxItem>
                                         </ComboBox>
                                     </StackPanel>

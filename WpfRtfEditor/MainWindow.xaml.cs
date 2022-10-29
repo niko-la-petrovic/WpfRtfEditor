@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using ColorPicker;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,6 +39,9 @@ public partial class MainWindow : Window
     // TODO subscript and superscript not working
     // TODO add input gesture text/shortcuts for all the menu items
     // TODO select all doesnt show text as being selected, even though it seems to work under the hood
+    // TODO close command shortcut
+    // TODO tooltips
+    // TODO clear formatting
 
     public MainWindow()
     {
@@ -325,5 +329,35 @@ public partial class MainWindow : Window
     {
         foregroundTextColorComboBox.SelectedItem = null;
         e.Handled = true;
+    }
+
+    private void ForegroundTextColorPicker_ColorChanged(object sender, RoutedEventArgs e)
+    {
+        if (IsSelectionEmpty) return; // TODO
+
+        Selection.ApplyPropertyValue(
+            TextElement.ForegroundProperty,
+            new SolidColorBrush(
+                FromColorPicker(foregroundTextColorPicker)));
+    }
+
+    private void BackgroundTextColorPicker_ColorChanged(object sender, RoutedEventArgs e)
+    {
+        if (IsSelectionEmpty) return; // TODO
+
+        Selection.ApplyPropertyValue(
+            TextElement.BackgroundProperty,
+            new SolidColorBrush(
+                FromColorPicker(backgroundTextColorPicker
+            )));
+    }
+
+    private static Color FromColorPicker(StandardColorPicker colorPicker)
+    {
+        return Color.FromArgb(
+                    (byte)colorPicker.Color.A,
+                    (byte)colorPicker.Color.RGB_R,
+                    (byte)colorPicker.Color.RGB_G,
+                    (byte)colorPicker.Color.RGB_B);
     }
 }
