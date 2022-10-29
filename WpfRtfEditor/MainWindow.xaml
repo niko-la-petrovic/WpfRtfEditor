@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfRtfEditor"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="WPF RTF Editor" Height="450" Width="800">
     <Window.Resources>
@@ -16,6 +16,26 @@
             <Thickness x:Key="IconButtonPadding">
                 4,0,4,0
             </Thickness>
+            <Thickness x:Key="HomeColumnMargins">
+                8,8,8,0
+            </Thickness>
+            <sys:Double x:Key="SingleIconButtonLength">
+                20
+            </sys:Double>
+            <Thickness x:Key="HomeStackPanelMargins" >
+                0,0,0,4
+            </Thickness>
+            <Style TargetType="Border" x:Key="HomeColumnBorderStyle">
+                <Setter Property="BorderBrush" Value="#e3e4e5" />
+                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            </Style>
+            <Style TargetType="StackPanel" x:Key="IconButtonStackPanel">
+                <Style.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Margin" Value="2,0,2,0"/>
+                    </Style>
+                </Style.Resources>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
     <Window.CommandBindings>
@@ -23,12 +43,14 @@
         <CommandBinding Command="{x:Static ApplicationCommands.Save}" Executed="SaveCommand_Executed" CanExecute="SaveCommand_CanExecute"/>
         <CommandBinding Command="{x:Static ApplicationCommands.SaveAs}" Executed="SaveAsCommand_Executed" CanExecute="SaveAsCommand_CanExecute"/>
         <CommandBinding Command="{x:Static ApplicationCommands.Open}" Executed="OpenCommand_Executed" CanExecute="OpenCommand_CanExecute" />
-
+        <CommandBinding Command="{x:Static ApplicationCommands.Find}" Executed="FindCommand_Executed" CanExecute="FindCommand_CanExecute"/>
+        <CommandBinding Command="{x:Static local:EditorCommands.StrikeThroughCommand}" Executed="StrikethroughCommand_Executed" CanExecute="StrikethroughCommand_CanExecute"/>
+        <CommandBinding Command="{x:Static local:EditorCommands.ClearFormatting}" Executed="ClearFormattingCommand_Executed" CanExecute="ClearFormattingCommand_CanExecute"/>
     </Window.CommandBindings>
 
     <Grid>
-        <DockPanel Background="AliceBlue" >
-            <DockPanel DockPanel.Dock="Top" Background="AntiqueWhite">
+        <DockPanel Background="#c5cfdf" >
+            <DockPanel DockPanel.Dock="Top" Background="#f5f6f7">
                 <Menu DockPanel.Dock="Top">
                     <MenuItem Header="_File" Padding="{StaticResource ResourceKey=MenuItemPadding}">
                         <MenuItem Name="saveMenuItem" Header="_Save" Command="{x:Static ApplicationCommands.Save}" />
@@ -36,7 +58,6 @@
                         <MenuItem Header="_Open" Command="{x:Static ApplicationCommands.Open}"  />
                         <MenuItem Header="_Close" Command="{x:Static ApplicationCommands.Close}" />
                     </MenuItem>
-                    <MenuItem Header="_Home"/>
                     <MenuItem Header="_Edit" >
                         <MenuItem Header="_Undo" Command="{x:Static ApplicationCommands.Undo}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
                         <MenuItem Header="_Redo" Command="{x:Static ApplicationCommands.Redo}" CommandTarget="{Binding ElementName=rtfTextBox}" />
@@ -44,90 +65,157 @@
                         <MenuItem Header="_Copy" Command="{x:Static ApplicationCommands.Copy}" CommandTarget="{Binding ElementName=rtfTextBox}" />
                         <MenuItem Header="_Paste" Command="{x:Static ApplicationCommands.Paste}" CommandTarget="{Binding ElementName=rtfTextBox}" />
                         <MenuItem Header="_Select All" Command="{x:Static ApplicationCommands.SelectAll}" CommandTarget="{Binding ElementName=rtfTextBox}" />
+                        <Separator/>
+                        <MenuItem Header="_Text">
+                            <MenuItem Header="_Bold" Command="{x:Static EditingCommands.ToggleBold}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <MenuItem Header="_Italic" Command="{x:Static EditingCommands.ToggleItalic}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <MenuItem Header="_Underline" Command="{x:Static EditingCommands.ToggleUnderline}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <MenuItem Header="_Strikethrough" Command="{x:Static local:EditorCommands.StrikeThroughCommand}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <MenuItem Header="_Subscript" Command="{x:Static EditingCommands.ToggleSubscript}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <MenuItem Header="_Superscript" Command="{x:Static EditingCommands.ToggleSuperscript}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <Separator/>
+                            <MenuItem Header="_Increase Font Size" Command="{x:Static EditingCommands.IncreaseFontSize}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <MenuItem Header="_Decrease Font Size" Command="{x:Static EditingCommands.DecreaseFontSize}" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                            <Separator/>
+                            <MenuItem Header="_Clear Formatting" Command="{x:Static local:EditorCommands.ClearFormatting }" CommandTarget="{Binding ElementName=rtfTextBox}"/>
+                        </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="_View"/>
                 </Menu>
 
-                <Grid DockPanel.Dock="Bottom" Background="Azure">
+                <Grid DockPanel.Dock="Bottom" Background="#f5f6f7">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition  Width="2*" />
-                        <ColumnDefinition  />
-                        <ColumnDefinition  />
-                        <ColumnDefinition  />
-                        <ColumnDefinition  />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="70"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <DockPanel Grid.Column="0" Grid.Row="0" Background="White">
-                        <StackPanel
-                            Orientation="Horizontal"
-                            >
-                            <Button Name="pasteButton" Command="{x:Static ApplicationCommands.Paste}" CommandTarget="{Binding ElementName=rtfTextBox}" >
-                                <StackPanel Orientation="Vertical">
-                                    <materialDesign:PackIcon Kind="FileDocument" Height="40" Width="40" HorizontalAlignment="Center" />
-                                    <Label Content="Paste" />
+                    <DockPanel Grid.Column="0" Grid.Row="0">
+                        <StackPanel Orientation="Vertical"
+                                    Margin="{StaticResource HomeColumnMargins}">
+                            <StackPanel
+                            Orientation="Horizontal">
+                                <Button Name="pasteButton" Command="{x:Static ApplicationCommands.Paste}" CommandTarget="{Binding ElementName=rtfTextBox}" ToolTip="Paste" >
+                                    <StackPanel Orientation="Vertical">
+                                        <materialDesign:PackIcon Kind="FileDocument" Height="40" Width="40" HorizontalAlignment="Center" />
+                                        <Label Content="Paste" />
+                                    </StackPanel>
+                                </Button>
+                                <StackPanel Orientation="Vertical" Margin="4,5,0,0">
+                                    <Button Name="cutButton" Command="{x:Static ApplicationCommands.Cut}" CommandTarget="{Binding ElementName=rtfTextBox}" ToolTip="Cut" Margin="0,0,0,4" Padding="{StaticResource ResourceKey=IconButtonPadding}" >
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="ScissorsCutting" VerticalAlignment="Center" />
+                                            <Label Content="Cut"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Name="copyButton" Command="{x:Static ApplicationCommands.Copy}" CommandTarget="{Binding ElementName=rtfTextBox}" ToolTip="Copy" Padding="{StaticResource ResourceKey=IconButtonPadding}" >
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" />
+                                            <Label>
+                                                Copy
+                                            </Label>
+                                        </StackPanel>
+                                    </Button>
                                 </StackPanel>
-                            </Button>
-                            <StackPanel Orientation="Vertical" Margin="4,5,0,0">
-                                <Button Name="cutButton" Command="{x:Static ApplicationCommands.Cut}" CommandTarget="{Binding ElementName=rtfTextBox}" Margin="0,0,0,4" Padding="{StaticResource ResourceKey=IconButtonPadding}" >
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="ScissorsCutting" VerticalAlignment="Center" />
-                                        <Label Content="Cut"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Name="copyButton" Command="{x:Static ApplicationCommands.Copy}" CommandTarget="{Binding ElementName=rtfTextBox}" Padding="{StaticResource ResourceKey=IconButtonPadding}" >
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" />
-                                        <Label>
-                                            Copy
-                                        </Label>
-                                    </StackPanel>
-                                </Button>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Label>Clipboard</Label>
                             </StackPanel>
                         </StackPanel>
                     </DockPanel>
 
-                    <Border Grid.Column="0" Grid.Row="0" BorderBrush="Black" BorderThickness="0,0,1,0" />
+                    <Border Grid.Column="0" Grid.Row="0" Style="{StaticResource HomeColumnBorderStyle}" />
 
-                    <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal">
-                            <ComboBox Name="fontComboBox" ToolTip="Font Family" IsEditable="True" SelectionChanged="FontComboBox_SelectionChanged"/>
-                            <ComboBox Name="fontSizeComboBox" ToolTip="Font Size" IsEditable="True" SelectionChanged="FontSizeComboBox_SelectionChanged" />
-                            <StackPanel Orientation="Horizontal" Margin="9,0,0,0">
-                                <Button Content="D"/>
-                                <Button Content="I"/>
+                    <DockPanel Grid.Column="1" Grid.Row="0">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="{StaticResource HomeColumnMargins}" VerticalAlignment="Bottom">
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal" Style="{StaticResource IconButtonStackPanel}" >
+                                    <ComboBox Name="fontComboBox" ToolTip="Font Family" IsEditable="True" SelectionChanged="FontComboBox_SelectionChanged"/>
+                                    <ComboBox Name="fontSizeComboBox" ToolTip="Font Size" IsEditable="True" SelectionChanged="FontSizeComboBox_SelectionChanged" />
+                                    <StackPanel Orientation="Horizontal" Margin="9,0,0,0">
+                                        <Button ToolTip="Increase Font Size" Command="{x:Static EditingCommands.IncreaseFontSize}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="LetterA" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                                <materialDesign:PackIcon Kind="ArrowUp" Width="10" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button ToolTip="Decrease Font Size" Command="{x:Static EditingCommands.DecreaseFontSize}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="LetterA" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                                <materialDesign:PackIcon Kind="ArrowDown" Width="10" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="9,16,0,0" Style="{StaticResource IconButtonStackPanel}">
+                                    <Button ToolTip="Toggle Bold" Command="{x:Static EditingCommands.ToggleBold }" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                        <materialDesign:PackIcon Kind="FormatBold" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                    </Button>
+                                    <Button ToolTip="Toggle Italic" Command="{x:Static EditingCommands.ToggleItalic}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                        <materialDesign:PackIcon Kind="FormatItalic" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                    </Button>
+                                    <Button ToolTip="Toggle Underline" Command="{x:Static EditingCommands.ToggleUnderline}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                        <materialDesign:PackIcon Kind="FormatUnderline" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                    </Button>
+                                    <Button ToolTip="Toggle Strikethrough" Command="{x:Static local:EditorCommands.StrikeThroughCommand}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                        <materialDesign:PackIcon Kind="FormatStrikethrough" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}"/>
+                                    </Button>
+                                    <Button ToolTip="Toggle Subscript" Command="{x:Static EditingCommands.ToggleSubscript}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                        <materialDesign:PackIcon Kind="FormatSubscript" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}"/>
+                                    </Button>
+                                    <Button ToolTip="Toggle Superscript" Command="{x:Static EditingCommands.ToggleSuperscript}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                        <materialDesign:PackIcon Kind="FormatSuperscript" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}"/>
+                                    </Button>
+                                    <ComboBox>
+                                        <ComboBoxItem IsSelected="True">
+                                            <Button>
+                                                D
+                                            </Button>
+                                        </ComboBoxItem>
+                                    </ComboBox>
+                                    <ComboBox>
+                                        <ComboBoxItem IsSelected="True">
+                                            <Button>
+                                                A
+                                            </Button>
+                                        </ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="9,0,0,0">
-                            <Button Content="B"/>
-                            <Button Content="It"/>
-                            <Button Content="U"/>
-                            <Button Content="Cross"/>
-                            <Button Content="Sub"/>
-                            <Button Content="Sup"/>
-                            <ComboBox>
-                                <ComboBoxItem IsSelected="True">
-                                    <Button>
-                                        A
-                                    </Button>
-                                </ComboBoxItem>
-                            </ComboBox>
-                            <ComboBox>
-                                <ComboBoxItem IsSelected="True">
-                                    <Button>
-                                        A
-                                    </Button>
-                                </ComboBoxItem>
-                            </ComboBox>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Label VerticalAlignment="Bottom">Font</Label>
                         </StackPanel>
-                    </StackPanel>
+                    </DockPanel>
 
-                    <StackPanel Grid.Column="2" Grid.Row="0" Orientation="Vertical">
+                    <Border Grid.Column="1" Grid.Row="0" Style="{StaticResource HomeColumnBorderStyle}" />
 
-                    </StackPanel>
+                    <DockPanel Grid.Column="2" Grid.Row="0">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="{StaticResource HomeColumnMargins}">
+                            <Button Name="findButton" Command="{x:Static ApplicationCommands.Find}" Margin="0,0,0,4" Padding="{StaticResource ResourceKey=IconButtonPadding}" >
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Binoculars" VerticalAlignment="Center" />
+                                    <Label Content="Find"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Name="selectAllButton" Command="{x:Static ApplicationCommands.SelectAll}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="SelectAll" VerticalAlignment="Center" />
+                                    <Label>Select All</Label>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+                            <Label>Editing</Label>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Border Grid.Column="2" Grid.Row="0" Style="{StaticResource HomeColumnBorderStyle}" />
                 </Grid>
             </DockPanel>
 
@@ -137,6 +225,7 @@
                        TextChanged="RtfTextBox_TextChanged" SelectionChanged="SelectionChanged"
                        DockPanel.Dock="Bottom"
                        BorderBrush="Black"
+                             Padding="64,16,64,16"
                          />
             </ScrollViewer>
         </DockPanel>

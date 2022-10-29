@@ -26,10 +26,18 @@ public partial class MainWindow : Window
 {
     protected RtfSelectionState RtfSelectionState { get; set; }
     protected TextSelection Selection => rtfTextBox.Selection;
-    protected bool UnsavedChanges { get; set; } // TODO on save set to false
+    protected bool UnsavedChanges { get; set; }
     protected string FileLocation { get; set; }
     protected bool IsFileLocationSet => !string.IsNullOrWhiteSpace(FileLocation);
+    protected bool HasAnyText => !string.IsNullOrWhiteSpace(GetFullTextRange().Text);
+    protected bool IsSelectionEmpty => Selection.IsEmpty;
+    protected bool RtfTextBoxInitialized => rtfTextBox != null;
     private readonly string _baseTitle;
+
+    // TODO container control for grid columns of home
+    // TODO subscript and superscript not working
+    // TODO add input gesture text/shortcuts for all the menu items
+
     public MainWindow()
     {
         InitializeComponent();
@@ -54,7 +62,7 @@ public partial class MainWindow : Window
     {
         if (e.AddedItems.Count == 0) return;
 
-        if (Selection.IsEmpty) return; // TODO
+        if (IsSelectionEmpty) return; // TODO
 
 
         Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
@@ -84,7 +92,7 @@ public partial class MainWindow : Window
     {
         if (e.AddedItems.Count == 0) return;
 
-        if (Selection.IsEmpty) return; //TODO
+        if (IsSelectionEmpty) return; //TODO
 
         double fontSize = (double)e.AddedItems[0];
         Selection.ApplyPropertyValue(TextElement.FontSizeProperty, fontSize);
@@ -233,5 +241,76 @@ public partial class MainWindow : Window
     private void OpenCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
         e.CanExecute = true;
+    }
+
+    private void FindCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        // TODO open dialog
+        var findWindow = new FindWindow();
+        findWindow.Show();
+    }
+
+    private void FindCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        if (!RtfTextBoxInitialized)
+            e.CanExecute = false;
+        else
+            e.CanExecute = HasAnyText;
+    }
+
+    private void StrikethroughCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        SetExecutableIfInitialized(e);
+    }
+
+    private void SetExecutableIfInitialized(CanExecuteRoutedEventArgs e)
+    {
+        if (!RtfTextBoxInitialized)
+            e.CanExecute = false;
+        else
+            e.CanExecute = true;
+
+        e.Handled = true;
+    }
+
+    private void StrikethroughCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (IsSelectionEmpty) return; // TODO
+
+        // TODO fix - for some reason - applying to the entire content - not just selection
+        var selectionDecorations = Selection.GetPropertyValue(Inline.TextDecorationsProperty) as TextDecorationCollection;
+        if (selectionDecorations is null || !selectionDecorations.Any(td => td.Location == TextDecorationLocation.Strikethrough))
+        {
+            selectionDecorations ??= new TextDecorationCollection();
+            selectionDecorations.Add(TextDecorations.Strikethrough);
+            Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, selectionDecorations);
+            return;
+        }
+        else
+        {
+            var clearedDecorationsList = selectionDecorations
+                .SkipWhile(sd => sd.Location == TextDecorationLocation.Strikethrough)
+                .ToList();
+            var clearedDecorations = new TextDecorationCollection(clearedDecorationsList);
+            Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, clearedDecorations);
+        }
+    }
+
+    private TextRange GetSelectedTextRange()
+    {
+        return new TextRange(Selection.Start, Selection.End);
+    }
+
+    private void ClearFormattingCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (IsSelectionEmpty) return;
+
+        var selectedTextRange = GetSelectedTextRange();
+        selectedTextRange.ApplyPropertyValue(Inline.TextDecorationsProperty, new TextDecorationCollection());
+    }
+
+    private void ClearFormattingCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        SetExecutableIfInitialized(e);
     }
 }
