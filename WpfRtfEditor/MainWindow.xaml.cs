@@ -2,8 +2,10 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,6 +37,7 @@ public partial class MainWindow : Window
     protected bool RtfTextBoxInitialized => rtfTextBox != null;
     private readonly string _baseTitle;
 
+    public static MainWindowProperties Properties { get; set; } = new();
     // TODO container control for grid columns of home
     // TODO subscript and superscript not working
     // TODO add input gesture text/shortcuts for all the menu items
@@ -290,9 +293,9 @@ public partial class MainWindow : Window
         {
             if (selectionDecorations is null)
                 selectionDecorations ??= new TextDecorationCollection();
-            if (selectionDecorations.IsFrozen) 
+            if (selectionDecorations.IsFrozen)
                 return;
-            
+
             selectionDecorations.Add(TextDecorations.Strikethrough);
             Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, selectionDecorations);
             return;
@@ -341,21 +344,26 @@ public partial class MainWindow : Window
     {
         if (IsSelectionEmpty) return; // TODO
 
+        Properties.ForegroundTextBrush = new SolidColorBrush(
+                FromColorPicker(foregroundTextColorPicker));
+
         Selection.ApplyPropertyValue(
             TextElement.ForegroundProperty,
-            new SolidColorBrush(
-                FromColorPicker(foregroundTextColorPicker)));
+            Properties.ForegroundTextBrush
+            );
     }
 
     private void BackgroundTextColorPicker_ColorChanged(object sender, RoutedEventArgs e)
     {
         if (IsSelectionEmpty) return; // TODO
 
+        Properties.BackgroundTextBrush = new SolidColorBrush(
+                FromColorPicker(backgroundTextColorPicker
+            ));
+
         Selection.ApplyPropertyValue(
             TextElement.BackgroundProperty,
-            new SolidColorBrush(
-                FromColorPicker(backgroundTextColorPicker
-            )));
+            Properties.BackgroundTextBrush);
     }
 
     private static Color FromColorPicker(StandardColorPicker colorPicker)
