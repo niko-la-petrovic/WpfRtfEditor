@@ -42,6 +42,8 @@ public partial class MainWindow : Window
     // TODO close command shortcut
     // TODO tooltips
     // TODO clear formatting
+    // TODO show highlighted/foreground color on change in menu (for current selection)
+    // TODO combine combobox with button for color picking
 
     public MainWindow()
     {
@@ -286,7 +288,11 @@ public partial class MainWindow : Window
         var selectionDecorations = Selection.GetPropertyValue(Inline.TextDecorationsProperty) as TextDecorationCollection;
         if (selectionDecorations is null || !selectionDecorations.Any(td => td.Location == TextDecorationLocation.Strikethrough))
         {
-            selectionDecorations ??= new TextDecorationCollection();
+            if (selectionDecorations is null)
+                selectionDecorations ??= new TextDecorationCollection();
+            if (selectionDecorations.IsFrozen) 
+                return;
+            
             selectionDecorations.Add(TextDecorations.Strikethrough);
             Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, selectionDecorations);
             return;
@@ -311,7 +317,7 @@ public partial class MainWindow : Window
         if (IsSelectionEmpty) return;
 
         var selectedTextRange = GetSelectedTextRange();
-        selectedTextRange.ApplyPropertyValue(Inline.TextDecorationsProperty, new TextDecorationCollection());
+        selectedTextRange.ClearAllProperties();
     }
 
     private void ClearFormattingCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)

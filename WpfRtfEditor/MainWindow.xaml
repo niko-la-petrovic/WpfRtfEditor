@@ -169,6 +169,9 @@
                                                 <materialDesign:PackIcon Kind="ArrowDown" Width="10" />
                                             </StackPanel>
                                         </Button>
+                                        <Button Margin="8,0,0,0" Command="{x:Static local:EditorCommands.ClearFormatting}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                                            <materialDesign:PackIcon Kind="FormatClear" Style="{StaticResource IconButton}" />
+                                        </Button>
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="9,16,0,0" Style="{StaticResource IconButtonStackPanel}">
