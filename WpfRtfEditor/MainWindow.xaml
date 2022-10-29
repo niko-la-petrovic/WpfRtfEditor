@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfRtfEditor"
+        xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
@@ -22,6 +23,10 @@
             <sys:Double x:Key="SingleIconButtonLength">
                 20
             </sys:Double>
+            <Style TargetType="materialDesign:PackIcon" x:Key="IconButton">
+                <Setter Property="Width" Value="{StaticResource SingleIconButtonLength}"/>
+                <Setter Property="Height" Value="{StaticResource SingleIconButtonLength}"/>
+            </Style>
             <Thickness x:Key="HomeStackPanelMargins" >
                 0,0,0,4
             </Thickness>
@@ -154,13 +159,13 @@
                                     <StackPanel Orientation="Horizontal" Margin="9,0,0,0">
                                         <Button ToolTip="Increase Font Size" Command="{x:Static EditingCommands.IncreaseFontSize}" CommandTarget="{Binding ElementName=rtfTextBox}">
                                             <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="LetterA" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                                <materialDesign:PackIcon Kind="LetterA" Style="{StaticResource IconButton}" />
                                                 <materialDesign:PackIcon Kind="ArrowUp" Width="10" />
                                             </StackPanel>
                                         </Button>
                                         <Button ToolTip="Decrease Font Size" Command="{x:Static EditingCommands.DecreaseFontSize}" CommandTarget="{Binding ElementName=rtfTextBox}">
                                             <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="LetterA" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                                <materialDesign:PackIcon Kind="LetterA" Style="{StaticResource IconButton}" />
                                                 <materialDesign:PackIcon Kind="ArrowDown" Width="10" />
                                             </StackPanel>
                                         </Button>
@@ -168,37 +173,51 @@
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="9,16,0,0" Style="{StaticResource IconButtonStackPanel}">
                                     <Button ToolTip="Toggle Bold" Command="{x:Static EditingCommands.ToggleBold }" CommandTarget="{Binding ElementName=rtfTextBox}">
-                                        <materialDesign:PackIcon Kind="FormatBold" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                        <materialDesign:PackIcon Kind="FormatBold" Style="{StaticResource IconButton}" />
                                     </Button>
                                     <Button ToolTip="Toggle Italic" Command="{x:Static EditingCommands.ToggleItalic}" CommandTarget="{Binding ElementName=rtfTextBox}">
-                                        <materialDesign:PackIcon Kind="FormatItalic" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                        <materialDesign:PackIcon Kind="FormatItalic" Style="{StaticResource IconButton}" />
                                     </Button>
                                     <Button ToolTip="Toggle Underline" Command="{x:Static EditingCommands.ToggleUnderline}" CommandTarget="{Binding ElementName=rtfTextBox}">
-                                        <materialDesign:PackIcon Kind="FormatUnderline" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}" />
+                                        <materialDesign:PackIcon Kind="FormatUnderline" Style="{StaticResource IconButton}" />
                                     </Button>
                                     <Button ToolTip="Toggle Strikethrough" Command="{x:Static local:EditorCommands.StrikeThroughCommand}" CommandTarget="{Binding ElementName=rtfTextBox}">
-                                        <materialDesign:PackIcon Kind="FormatStrikethrough" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}"/>
+                                        <materialDesign:PackIcon Kind="FormatStrikethrough" Style="{StaticResource IconButton}"/>
                                     </Button>
                                     <Button ToolTip="Toggle Subscript" Command="{x:Static EditingCommands.ToggleSubscript}" CommandTarget="{Binding ElementName=rtfTextBox}">
-                                        <materialDesign:PackIcon Kind="FormatSubscript" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}"/>
+                                        <materialDesign:PackIcon Kind="FormatSubscript" Style="{StaticResource IconButton}"/>
                                     </Button>
                                     <Button ToolTip="Toggle Superscript" Command="{x:Static EditingCommands.ToggleSuperscript}" CommandTarget="{Binding ElementName=rtfTextBox}">
-                                        <materialDesign:PackIcon Kind="FormatSuperscript" Width="{StaticResource SingleIconButtonLength}" Height="{StaticResource SingleIconButtonLength}"/>
+                                        <materialDesign:PackIcon Kind="FormatSuperscript" Style="{StaticResource IconButton}"/>
                                     </Button>
-                                    <ComboBox>
-                                        <ComboBoxItem IsSelected="True">
-                                            <Button>
-                                                D
-                                            </Button>
-                                        </ComboBoxItem>
-                                    </ComboBox>
-                                    <ComboBox>
-                                        <ComboBoxItem IsSelected="True">
-                                            <Button>
-                                                A
-                                            </Button>
-                                        </ComboBoxItem>
-                                    </ComboBox>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button>
+                                            <StackPanel Orientation="Vertical">
+                                                <materialDesign:PackIcon Kind="FormatColorText" Style="{StaticResource IconButton}" />
+                                                <Rectangle Name="foregroundTextColorRect"  Fill="Black" Width="10" Height="5"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <ComboBox Name="foregroundTextColorComboBox" SelectionChanged="ForegroundTextColorComboBox_Selected">
+                                            <ComboBoxItem>
+                                                <colorpicker:StandardColorPicker x:Name="foregroundTextColorPicker" Width="200" Height="380" />
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button>
+                                            <StackPanel Orientation="Vertical">
+                                                <materialDesign:PackIcon Kind="FormatColorHighlight" Style="{StaticResource IconButton}" />
+                                                <Rectangle Name="backgroundTextColorRect"  Fill="Black" Width="10" Height="5"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <ComboBox Name="backgroundTextColorComboBox" SelectionChanged="BackgroundTextColorComboBox_Selected">
+                                            <ComboBoxItem>
+                                                <colorpicker:StandardColorPicker x:Name="backgroundTextColorPicker" Width="200" Height="380" />
+                                            </ComboBoxItem>
+                                        </ComboBox>
+                                    </StackPanel>
+
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>

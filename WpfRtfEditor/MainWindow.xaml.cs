@@ -37,6 +37,7 @@ public partial class MainWindow : Window
     // TODO container control for grid columns of home
     // TODO subscript and superscript not working
     // TODO add input gesture text/shortcuts for all the menu items
+    // TODO select all doesnt show text as being selected, even though it seems to work under the hood
 
     public MainWindow()
     {
@@ -312,5 +313,17 @@ public partial class MainWindow : Window
     private void ClearFormattingCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
         SetExecutableIfInitialized(e);
+    }
+
+    private void BackgroundTextColorComboBox_Selected(object sender, SelectionChangedEventArgs e)
+    {
+        backgroundTextColorComboBox.SelectedItem = null;
+        e.Handled = true;
+    }
+
+    private void ForegroundTextColorComboBox_Selected(object sender, SelectionChangedEventArgs e)
+    {
+        foregroundTextColorComboBox.SelectedItem = null;
+        e.Handled = true;
     }
 }
