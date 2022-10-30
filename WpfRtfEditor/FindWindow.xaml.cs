@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,7 +29,7 @@ public partial class FindWindow : Window
     protected static string LastSearch { get; set; } = string.Empty;
     protected static int? NextOffset { get; set; } = null;
 
-    protected static HashSet<string> PreviousSearches = new();
+    public static FindWindowProperties Properties { get; set; } = new();
 
     public FindWindow()
     {
@@ -73,8 +75,8 @@ public partial class FindWindow : Window
         if (NextOffset != null && LastSearch == searchText)
             searchRange = new TextRange(searchRange.Start.GetPositionAtOffset(NextOffset.Value), searchRange.End);
 
-        if (!PreviousSearches.Contains(searchText))
-            PreviousSearches.Add(searchText);
+        if (!Properties.LastSearches.Contains(searchText))
+            Properties.AddLastSearch(searchText);
         LastSearch = searchText;
 
         var offset = searchRange.Text.IndexOf(searchText, stringComparison);
@@ -120,5 +122,15 @@ public partial class FindWindow : Window
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void Previous_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (Previous.SelectedItem is null)
+            return;
+
+        findTextBox.Text = (string)Previous.SelectedItem;
+        Previous.SelectedItem = null;
+        e.Handled = true;
     }
 }

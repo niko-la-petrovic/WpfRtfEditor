@@ -260,7 +260,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Visible"
                           Margin="10">
                 <RichTextBox Name="rtfTextBox"
-                       TextChanged="RtfTextBox_TextChanged" SelectionChanged="SelectionChanged"
+                       TextChanged="RtfTextBox_TextChanged"
                        DockPanel.Dock="Bottom"
                        BorderBrush="Black"
                              Padding="64,16,64,16"

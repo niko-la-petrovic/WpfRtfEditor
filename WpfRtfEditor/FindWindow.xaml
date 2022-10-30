@@ -27,7 +27,10 @@
                 <StackPanel Orientation="Vertical" VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal">
                         <Label>Find what:</Label>
-                        <TextBox TabIndex="0" Width="100" Height="20" Name="findTextBox" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox TabIndex="0" Width="100" Height="20" Name="findTextBox" />
+                            <ComboBox Height="20" Name="Previous" SelectionChanged="Previous_SelectionChanged" ItemsSource="{Binding ElementName=findWindow, Path=Properties.LastSearches}" />
+                        </StackPanel>
                     </StackPanel>
                     <CheckBox Name="matchCaseCheckbox">
                         Match case

@@ -90,12 +90,6 @@ public partial class MainWindow : Window
 
         double fontSize = (double)e.AddedItems[0];
         Selection.ApplyPropertyValue(TextElement.FontSizeProperty, fontSize);
-        //rtfTextBox.FontSize = fontSize;
-    }
-
-    private void SelectionChanged(object sender, RoutedEventArgs e)
-    {
-
     }
 
     private void CloseCommand_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -361,7 +355,6 @@ public partial class MainWindow : Window
     {
         rtfTextBox.Focus();
         rtfTextBox.SelectAll();
-        var range = GetSelectedTextRange();
     }
 
     private void SelectAllCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
