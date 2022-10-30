@@ -9,7 +9,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         x:Name="mainWindow"
-        Title="WPF RTF Editor" Height="450" Width="800">
+        Title="WPF RTF Editor" Height="600  " Width="800">
     <Window.Resources>
         <ResourceDictionary>
             <Thickness x:Key="MenuItemPadding">
@@ -66,6 +66,7 @@
         <CommandBinding Command="{x:Static ApplicationCommands.Find}" Executed="FindCommand_Executed" CanExecute="FindCommand_CanExecute"/>
         <CommandBinding Command="{x:Static local:EditorCommands.StrikeThroughCommand}" Executed="StrikethroughCommand_Executed" CanExecute="StrikethroughCommand_CanExecute"/>
         <CommandBinding Command="{x:Static local:EditorCommands.ClearFormatting}" Executed="ClearFormattingCommand_Executed" CanExecute="ClearFormattingCommand_CanExecute"/>
+        <CommandBinding Command="{x:Static local:EditorCommands.SelectAll}" CanExecute="SelectAllCommandBinding_CanExecute" Executed="SelectAllCommandBinding_Executed"/>
     </Window.CommandBindings>
 
     <Grid>
@@ -240,7 +241,7 @@
                                     <Label Content="Find"/>
                                 </StackPanel>
                             </Button>
-                            <Button Name="selectAllButton" Command="{x:Static ApplicationCommands.SelectAll}" CommandTarget="{Binding ElementName=rtfTextBox}">
+                            <Button Name="selectAllButton" Command="{x:Static local:EditorCommands.SelectAll}" CommandTarget="{Binding ElementName=rtfTextBox}">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="SelectAll" VerticalAlignment="Center" />
                                     <Label>Select All</Label>

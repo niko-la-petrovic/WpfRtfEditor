@@ -5,7 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfRtfEditor"
         mc:Ignorable="d"
-        Title="Find" Height="160" Width="800" ShowInTaskbar="True" WindowStyle="ToolWindow">
+        Name="findWindow"
+        Title="Find" Height="160" Width="400" ShowInTaskbar="True" WindowStyle="ToolWindow">
+    <Window.Resources>
+
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static local:EditorCommands.FindCommand}" CanExecute="FindCommandBinding_CanExecute" Executed="FindCommandBinding_Executed"/>
+    </Window.CommandBindings>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -13,27 +21,28 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="80" />
         </Grid.RowDefinitions>
-        
-        <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical">
-            <StackPanel Orientation="Horizontal">
-                <Label>Find what:</Label>
-                <TextBox Width="100" Height="20">
 
-                </TextBox>
-                <Button>
-                    Find Next
-                </Button>
-            </StackPanel>
+        <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
-                <CheckBox>
-                    Match whole word only
-                </CheckBox>
-                <Button>Cancel</Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <CheckBox>
-                    Match case
-                </CheckBox>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal">
+                        <Label>Find what:</Label>
+                        <TextBox Width="100" Height="20" Name="findTextBox" />
+                    </StackPanel>
+                    <CheckBox >
+                        Match whole word only
+                    </CheckBox>
+                    <CheckBox>
+                        Match case
+                    </CheckBox>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="16,0,0,0">
+                    <Button Command="{x:Static local:EditorCommands.FindCommand}" CommandTarget="{Binding ElementName=findWindow, Path=richTextBox}" CommandParameter="{Binding ElementName=findTextBox, Path=Text}"
+                            Margin="0,0,0,8">
+                        Find Next
+                    </Button>
+                    <Button Click="CancelButton_Click">Cancel</Button>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
     </Grid>

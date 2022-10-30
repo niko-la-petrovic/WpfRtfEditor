@@ -41,12 +41,8 @@ public partial class MainWindow : Window
     // TODO container control for grid columns of home
     // TODO subscript and superscript not working
     // TODO add input gesture text/shortcuts for all the menu items
-    // TODO select all doesnt show text as being selected, even though it seems to work under the hood
     // TODO close command shortcut
     // TODO tooltips
-    // TODO clear formatting
-    // TODO show highlighted/foreground color on change in menu (for current selection)
-    // TODO combine combobox with button for color picking
 
     public MainWindow()
     {
@@ -74,7 +70,6 @@ public partial class MainWindow : Window
 
         if (IsSelectionEmpty) return; // TODO
 
-
         Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
     }
 
@@ -85,18 +80,7 @@ public partial class MainWindow : Window
             UnsavedChanges = true;
             SetTitle();
         }
-        //Selection.Select(rtfTextBox.CaretPosition, rtfTextBox.CaretPosition.GetPositionAtOffset(-1));
-        //// TODO only do this if unhandled property change
-        //Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, fontComboBox.SelectedItem);
-
-        //Selection.Select(rtfTextBox.CaretPosition.DocumentEnd, rtfTextBox.CaretPosition.DocumentEnd);
-
-
-        //Selection.Select()
-        //
     }
-
-    // TODO move cursor - update font family, size, color, ... in editor
 
     private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -255,8 +239,7 @@ public partial class MainWindow : Window
 
     private void FindCommand_Executed(object sender, ExecutedRoutedEventArgs e)
     {
-        // TODO open dialog
-        var findWindow = new FindWindow();
+        var findWindow = new FindWindow(rtfTextBox);
         findWindow.Show();
     }
 
@@ -287,7 +270,6 @@ public partial class MainWindow : Window
     {
         if (IsSelectionEmpty) return; // TODO
 
-        // TODO fix - for some reason - applying to the entire content - not just selection
         var selectionDecorations = Selection.GetPropertyValue(Inline.TextDecorationsProperty) as TextDecorationCollection;
         if (selectionDecorations is null || !selectionDecorations.Any(td => td.Location == TextDecorationLocation.Strikethrough))
         {
@@ -297,7 +279,7 @@ public partial class MainWindow : Window
                 return;
 
             selectionDecorations.Add(TextDecorations.Strikethrough);
-            Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, selectionDecorations);
+            Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, selectionDecorations); // TODO fix - for some reason - applying to the entire content - not just selection
             return;
         }
         else
@@ -373,5 +355,17 @@ public partial class MainWindow : Window
                     (byte)colorPicker.Color.RGB_R,
                     (byte)colorPicker.Color.RGB_G,
                     (byte)colorPicker.Color.RGB_B);
+    }
+
+    private void SelectAllCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        rtfTextBox.Focus();
+        rtfTextBox.SelectAll();
+        var range = GetSelectedTextRange();
+    }
+
+    private void SelectAllCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = true;
     }
 }
