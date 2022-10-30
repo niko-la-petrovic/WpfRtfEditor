@@ -15,8 +15,7 @@ using System.Windows.Shapes;
 namespace WpfRtfEditor;
 
 // TODO label alt+_ for the find window
-// TODO focus back onto window if found
-// TODO find next should go to the next index if text unchanged
+// TODO autofocus
 
 /// <summary>
 /// Interaction logic for FindWindow.xaml
@@ -25,8 +24,10 @@ public partial class FindWindow : Window
 {
     private readonly RichTextBox richTextBox;
 
-    protected string LastSearch { get; set; } = string.Empty;
-    protected int? LastIndex { get; set; } = null;
+    protected static string LastSearch { get; set; } = string.Empty;
+    protected static int? NextOffset { get; set; } = null;
+
+    protected static HashSet<string> PreviousSearches = new();
 
     public FindWindow()
     {
@@ -65,10 +66,21 @@ public partial class FindWindow : Window
 
     public static TextRange? FindTextInRange(TextRange searchRange, string searchText, StringComparison stringComparison)
     {
-        // TODO last search string and index
-        int offset = searchRange.Text.IndexOf(searchText, stringComparison);
+        if (NextOffset != null && LastSearch == searchText)
+            searchRange = new TextRange(searchRange.Start.GetPositionAtOffset(NextOffset.Value), searchRange.End);
+
+        if (!PreviousSearches.Contains(searchText))
+            PreviousSearches.Add(searchText);
+        LastSearch = searchText;
+
+        var offset = searchRange.Text.IndexOf(searchText, stringComparison);
         if (offset < 0)
+        {
+            NextOffset = null;
             return null;  // Not found
+        }
+        NextOffset ??= 0;
+        NextOffset += offset + searchText.Length;
 
         var start = GetTextPositionAtOffset(searchRange.Start, offset);
         var result = new TextRange(start, GetTextPositionAtOffset(start, searchText.Length));
