@@ -53,7 +53,11 @@ public partial class FindWindow : Window
             return;
 
         var textRange = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
-        var foundTextRange = FindTextInRange(textRange, searchText, StringComparison.Ordinal);
+        var stringComparison = StringComparison.InvariantCultureIgnoreCase;
+        if (matchCaseCheckbox.IsChecked == true)
+            stringComparison = StringComparison.Ordinal;
+
+        var foundTextRange = FindTextInRange(textRange, searchText, stringComparison);
         if (foundTextRange is null)
         {
             MessageBox.Show("No results found.", "Search Results", MessageBoxButton.OK, MessageBoxImage.Information);

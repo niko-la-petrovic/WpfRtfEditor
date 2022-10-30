@@ -22,26 +22,23 @@
             <RowDefinition Height="80" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical" VerticalAlignment="Top">
+        <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical" VerticalAlignment="Top" Margin="16,0,0,0">
             <StackPanel Orientation="Horizontal">
-                <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="0,0,0,16">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal">
                         <Label>Find what:</Label>
-                        <TextBox Width="100" Height="20" Name="findTextBox" />
+                        <TextBox TabIndex="0" Width="100" Height="20" Name="findTextBox" />
                     </StackPanel>
-                    <CheckBox >
-                        Match whole word only
-                    </CheckBox>
-                    <CheckBox>
+                    <CheckBox Name="matchCaseCheckbox">
                         Match case
                     </CheckBox>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="16,0,0,0">
-                    <Button Command="{x:Static local:EditorCommands.FindCommand}" CommandTarget="{Binding ElementName=findWindow, Path=richTextBox}" CommandParameter="{Binding ElementName=findTextBox, Path=Text}"
+                    <Button TabIndex="1" Command="{x:Static local:EditorCommands.FindCommand}" CommandTarget="{Binding ElementName=findWindow, Path=richTextBox}" CommandParameter="{Binding ElementName=findTextBox, Path=Text}"
                             Margin="0,0,0,8">
                         Find Next
                     </Button>
-                    <Button Click="CancelButton_Click">Cancel</Button>
+                    <Button TabIndex="2" Click="CancelButton_Click">Cancel</Button>
                 </StackPanel>
             </StackPanel>
         </StackPanel>
