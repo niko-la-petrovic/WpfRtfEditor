@@ -248,7 +248,7 @@
                                 <StackPanel Orientation="Horizontal"
                                             Height="22">
                                     <materialDesign:PackIcon Kind="Binoculars" VerticalAlignment="Center" Style="{StaticResource IconButton}" />
-                                    <Label Content="Find"/>
+                                    <Label Content="Find" Padding="4,3,0,0"/>
                                 </StackPanel>
                             </Button>
                             <Button Name="selectAllButton" Command="{x:Static local:EditorCommands.SelectAll}" CommandTarget="{Binding ElementName=rtfTextBox}">

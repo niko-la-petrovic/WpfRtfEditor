@@ -35,7 +35,10 @@ public partial class MainWindow : Window
     protected bool HasAnyText => !string.IsNullOrWhiteSpace(GetFullTextRange().Text);
     protected bool IsSelectionEmpty => RtfTextBoxInitialized ? Selection.IsEmpty : true;
     protected bool RtfTextBoxInitialized => rtfTextBox != null;
+
+    private const int baselineAlignmentFontDecrement = 3;
     private readonly string _baseTitle;
+    private FindWindow? findWindow;
 
     public static MainWindowProperties Properties { get; set; } = new();
     // TODO container control for grid columns of home
@@ -233,8 +236,17 @@ public partial class MainWindow : Window
 
     private void FindCommand_Executed(object sender, ExecutedRoutedEventArgs e)
     {
-        var findWindow = new FindWindow(rtfTextBox);
-        findWindow.Show();
+        if (findWindow is null)
+        {
+            findWindow = new FindWindow(rtfTextBox);
+            findWindow.Show();
+            findWindow.Closed += (o, e) =>
+            {
+                findWindow = null;
+            };
+        }
+        else
+            findWindow.Focus();
     }
 
     private void FindCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -376,7 +388,7 @@ public partial class MainWindow : Window
 
         var textRange = GetSelectedTextRange();
         textRange.ApplyPropertyValue(Inline.BaselineAlignmentProperty, BaselineAlignment.Subscript);
-        textRange.ApplyPropertyValue(TextElement.FontSizeProperty, (double)textRange.GetPropertyValue(TextElement.FontSizeProperty) - 4); // TODO re-evaluate
+        textRange.ApplyPropertyValue(TextElement.FontSizeProperty, (double)textRange.GetPropertyValue(TextElement.FontSizeProperty) - baselineAlignmentFontDecrement); // TODO re-evaluate
     }
 
     private void ToggleSubscriptCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -393,6 +405,6 @@ public partial class MainWindow : Window
     {
         var textRange = GetSelectedTextRange();
         textRange.ApplyPropertyValue(Inline.BaselineAlignmentProperty, BaselineAlignment.Superscript);
-        textRange.ApplyPropertyValue(TextElement.FontSizeProperty, (double)textRange.GetPropertyValue(TextElement.FontSizeProperty) + 4); // TODO re-evaluate
+        textRange.ApplyPropertyValue(TextElement.FontSizeProperty, (double)textRange.GetPropertyValue(TextElement.FontSizeProperty) - baselineAlignmentFontDecrement); // TODO re-evaluate
     }
 }
