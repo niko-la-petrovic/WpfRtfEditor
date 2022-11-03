@@ -16,6 +16,8 @@ public static class EditorCommands
     public static RoutedUICommand ClearFormatting { get; } = new();
     public static RoutedUICommand FindCommand { get; } = new();
     public static RoutedUICommand SelectAll { get; } = new();
+    public static RoutedUICommand ToggleSubscript { get; } = new();
+    public static RoutedUICommand ToggleSuperscript { get; } = new();
     // TODO
     //public static RoutedUICommand FontFamilyCommand = new RoutedUICommand();
     //public static RoutedUICommand FontSizeCommand = new RoutedUICommand();

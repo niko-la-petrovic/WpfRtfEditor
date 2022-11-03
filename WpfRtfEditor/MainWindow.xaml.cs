@@ -33,7 +33,7 @@ public partial class MainWindow : Window
     protected string FileLocation { get; set; }
     protected bool IsFileLocationSet => !string.IsNullOrWhiteSpace(FileLocation);
     protected bool HasAnyText => !string.IsNullOrWhiteSpace(GetFullTextRange().Text);
-    protected bool IsSelectionEmpty => Selection.IsEmpty;
+    protected bool IsSelectionEmpty => RtfTextBoxInitialized ? Selection.IsEmpty : true;
     protected bool RtfTextBoxInitialized => rtfTextBox != null;
     private readonly string _baseTitle;
 
@@ -264,25 +264,33 @@ public partial class MainWindow : Window
     {
         if (IsSelectionEmpty) return; // TODO
 
+        ApplyTextDecorationIfNotPresent(TextDecorationLocation.Strikethrough, TextDecorations.Strikethrough, Inline.TextDecorationsProperty);
+    }
+
+    private void ApplyTextDecorationIfNotPresent(
+        TextDecorationLocation decorationLocation,
+        TextDecorationCollection textDecoration,
+        DependencyProperty textDecorationsProperty)
+    {
         var selectionDecorations = Selection.GetPropertyValue(Inline.TextDecorationsProperty) as TextDecorationCollection;
-        if (selectionDecorations is null || !selectionDecorations.Any(td => td.Location == TextDecorationLocation.Strikethrough))
+        if (selectionDecorations is null || !selectionDecorations.Any(td => td.Location == decorationLocation))
         {
             if (selectionDecorations is null)
                 selectionDecorations ??= new TextDecorationCollection();
             if (selectionDecorations.IsFrozen)
                 return;
 
-            selectionDecorations.Add(TextDecorations.Strikethrough);
+            selectionDecorations.Add(textDecoration);
             Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, selectionDecorations); // TODO fix - for some reason - applying to the entire content - not just selection
             return;
         }
         else
         {
             var clearedDecorationsList = selectionDecorations
-                .SkipWhile(sd => sd.Location == TextDecorationLocation.Strikethrough)
+                .SkipWhile(sd => sd.Location == decorationLocation)
                 .ToList();
             var clearedDecorations = new TextDecorationCollection(clearedDecorationsList);
-            Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, clearedDecorations);
+            Selection.ApplyPropertyValue(textDecorationsProperty, clearedDecorations);
         }
     }
 
@@ -360,5 +368,31 @@ public partial class MainWindow : Window
     private void SelectAllCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
         e.CanExecute = true;
+    }
+
+    private void ToggleSubscriptCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (IsSelectionEmpty) return; // TODO
+
+        var textRange = GetSelectedTextRange();
+        textRange.ApplyPropertyValue(Inline.BaselineAlignmentProperty, BaselineAlignment.Subscript);
+        textRange.ApplyPropertyValue(TextElement.FontSizeProperty, (double)textRange.GetPropertyValue(TextElement.FontSizeProperty) - 4); // TODO re-evaluate
+    }
+
+    private void ToggleSubscriptCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = !IsSelectionEmpty;
+    }
+
+    private void ToggleSuperscriptCommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = !IsSelectionEmpty;
+    }
+
+    private void ToggleSuperCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        var textRange = GetSelectedTextRange();
+        textRange.ApplyPropertyValue(Inline.BaselineAlignmentProperty, BaselineAlignment.Superscript);
+        textRange.ApplyPropertyValue(TextElement.FontSizeProperty, (double)textRange.GetPropertyValue(TextElement.FontSizeProperty) + 4); // TODO re-evaluate
     }
 }
